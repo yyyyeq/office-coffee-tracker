@@ -100,20 +100,34 @@ current_opened_days = 0
 
 if len(unpack_df) >= 2:
     sorted_unpacks = unpack_df.sort_values("event_date").reset_index(drop=True)
-    sorted_unpacks["prev_date"] = sorted_unpacks["event_date"].shift(1)
-    sorted_unpacks["duration_days"] = (pd.to_datetime(sorted_unpacks["event_date"]) - pd.to_datetime(sorted_unpacks["prev_date"])).dt.days
+    first_date = sorted_unpacks["event_date"].iloc[0]
+    latest_date = sorted_unpacks["event_date"].iloc[-1]
+    span_days = (latest_date - first_date).days
     
-    recent = sorted_unpacks["duration_days"].dropna().tail(5)
-    if not recent.empty and recent.mean() > 0:
-        avg_days = round(recent.mean(), 1)
-        latest_date = sorted_unpacks["event_date"].iloc[-1]
+    # 若有跨不同日期開豆，計算平均每包喝幾天
+    if span_days > 0 and len(sorted_unpacks) > 1:
+        # 平均每包天數 = 總跨度天數 / (總開豆包數 - 最新這批次)
+        # 用近期的開豆記錄做滾動推估
+        recent_unpacks = sorted_unpacks.tail(6)
+        r_span = (recent_unpacks["event_date"].iloc[-1] - recent_unpacks["event_date"].iloc[0]).days
+        if r_span > 0:
+            avg_days = round(r_span / (len(recent_unpacks) - 1), 1)
+        else:
+            avg_days = round(span_days / (len(sorted_unpacks) - 1), 1)
+            
         today = datetime.now().date()
         current_opened_days = (today - latest_date).days
-        days_left = max(0, int(avg_days - current_opened_days))
-        estimated_finish_date = latest_date + timedelta(days=int(avg_days))
-elif len(unpack_df) == 1:
+        
+        # 查最新這天一共開了幾包
+        latest_batch_count = len(sorted_unpacks[sorted_unpacks["event_date"] == latest_date])
+        # 這批總共預估能撐的天數 = 平均每包天數 * 本次開的包數
+        total_batch_expected_days = avg_days * latest_batch_count
+        
+        days_left = max(0, int(total_batch_expected_days - current_opened_days))
+        estimated_finish_date = latest_date + timedelta(days=int(total_batch_expected_days))
+elif len(unpack_df) >= 1:
     today = datetime.now().date()
-    current_opened_days = (today - unpack_df["event_date"].iloc[0]).days
+    current_opened_days = (today - unpack_df["event_date"].iloc[-1]).days
 
 # 4. 口語化四卡儀表板
 c1, c2, c3, c4 = st.columns(4)
@@ -137,7 +151,7 @@ with c1:
 
 with c2:
     v_speed = f"{avg_days} <span style='font-size: 1rem; font-weight: normal; color: #777;'>天/包</span>" if avg_days else "<span style='font-size:1.2rem; color:#aaa;'>抓數據中...</span>"
-    sub_speed = "大約這速度消滅一包" if avg_days else "至少開過 2 包才算得出"
+    sub_speed = "大約這速度消滅一包" if avg_days else "開過不同天數的豆子後會自動算出"
     st.markdown(f"""
     <div class="status-card">
         <div class="status-title">⚡ 大家喝有多快？</div>
@@ -149,17 +163,17 @@ with c2:
 with c3:
     if days_left is not None:
         v_left = f"約 {days_left} <span style='font-size: 1rem; font-weight: normal; color: #777;'>天</span>"
-        sub_left = f"這包已經開喝第 {current_opened_days} 天"
-    elif len(unpack_df) == 1:
+        sub_left = f"現有這批已開喝第 {current_opened_days} 天"
+    elif len(unpack_df) >= 1:
         v_left = f"第 {current_opened_days} <span style='font-size: 1rem; font-weight: normal; color: #777;'>天</span>"
-        sub_left = "開第 2 包時就會開始倒數！"
+        sub_left = "累積下一批開豆就會開始倒數！"
     else:
         v_left = "<span style='font-size:1.2rem; color:#aaa;'>還沒開過</span>"
         sub_left = "趕快去拆第一包～"
         
     st.markdown(f"""
     <div class="status-card">
-        <div class="status-title">⏳ 這包還能撐多久？</div>
+        <div class="status-title">⏳ 正在喝的能撐多久？</div>
         <div class="status-number">{v_left}</div>
         <div class="status-sub">{sub_left}</div>
     </div>
@@ -180,15 +194,15 @@ st.write("")
 
 # 預警提示
 if current_stock == 0:
-    st.error("😱 **重大警報**：櫃子裡已經**沒有半包存貨**了！這包喝完就真的沒了，快去叫貨！")
-elif current_stock == 1:
-    st.warning("⚠️ **咖啡告急**：只剩最後 1 包存貨！建議現在就可以準備下單囉～")
+    st.error("😱 **重大警報**：櫃子裡已經**沒有半包存貨**了！喝完就真的沒了，快去叫貨！")
+elif current_stock <= 2:
+    st.warning(f"⚠️ **咖啡告急**：只剩最後 {current_stock} 包存貨！建議現在就可以準備下單囉～")
 
 # 5. 操作分頁
-tab1, tab2, tab3 = st.tabs(["☕ 我拆了一包新豆子！", "📦 咖啡豆到貨了！", "📊 飲用紀錄與趨勢"])
+tab1, tab2, tab3 = st.tabs(["☕ 我拆了新豆子！", "📦 咖啡豆到貨了！", "📊 飲用紀錄與趨勢"])
 
 with tab1:
-    st.markdown("#### 拆了一包新的？點一下是哪款～")
+    st.markdown("#### 拆了新豆子？選一下是哪一款與包數～")
     with st.form("unpack_form", clear_on_submit=True):
         c1, c2 = st.columns(2)
         with c1:
@@ -200,11 +214,14 @@ with tab1:
             custom_bean = ""
             if bean_choice == "其他豆款":
                 custom_bean = st.text_input("請輸入其他豆款名稱")
+            
+            # ✨ 新增：一次開幾包
+            unpack_qty = st.number_input("這次一次開了幾包？", min_value=1, max_value=10, value=1, step=1, help="例如兩台咖啡機各倒一包，就選 2 包")
         with c2:
             who = st.text_input("你是哪位善心人士？（大名/暱稱）", placeholder="例如：Gary、Alice、小王")
             date = st.date_input("什麼時候拆的？", value=datetime.now().date())
             
-        flavor = st.text_input("這包有什麼心得筆記嗎？（選填）", placeholder="例如：這批比較香、今天人多沖特別濃")
+        flavor = st.text_input("這包有什麼心得筆記嗎？（選填）", placeholder="例如：一次倒兩包進大咖啡機、這批香氣很濃")
         
         btn_open = st.form_submit_button("🚀 開喝！登記拆封", use_container_width=True, type="primary")
         if btn_open:
@@ -212,15 +229,18 @@ with tab1:
             if not actual_bean or not who:
                 st.error("請確認豆款與你的名字有填寫喔！")
             else:
-                supabase.table("coffee_records").insert({
+                # 依開的包數批次寫入紀錄
+                records = [{
                     "event_type": "UNPACK",
                     "bean_name": actual_bean,
                     "weight_g": 454,
                     "operator": who,
                     "event_date": str(date),
-                    "note": flavor
-                }).execute()
-                st.toast("🎉 續命泉源已補充！今天工作也辛苦啦 ✨")
+                    "note": f"{flavor} (一次開 {unpack_qty} 包之 #{i+1})" if unpack_qty > 1 and flavor else (f"一次開 {unpack_qty} 包之第 {i+1} 包" if unpack_qty > 1 else flavor)
+                } for i in range(unpack_qty)]
+                
+                supabase.table("coffee_records").insert(records).execute()
+                st.toast(f"🎉 成功登記拆封 {unpack_qty} 包「{actual_bean}」！續命泉源已補充 ✨")
                 st.rerun()
 
 with tab2:
@@ -261,34 +281,31 @@ with tab2:
                 st.rerun()
 
 with tab3:
-    st.markdown("#### 📈 每包喝了多久？（天數越短代表大家越愛喝或最近案子太忙）")
+    st.markdown("#### 📈 開豆歷史與消耗節奏")
     if len(unpack_df) >= 2:
-        sorted_unpacks = unpack_df.sort_values("event_date").reset_index(drop=True)
-        sorted_unpacks["prev_date"] = sorted_unpacks["event_date"].shift(1)
-        sorted_unpacks["撐了幾天"] = (pd.to_datetime(sorted_unpacks["event_date"]) - pd.to_datetime(sorted_unpacks["prev_date"])).dt.days
-        chart_data = sorted_unpacks.dropna(subset=["撐了幾天"]).copy()
+        # 按日期統計每天拆了幾包
+        daily_unpacks = unpack_df.groupby(["event_date", "bean_name"]).size().reset_index(name="拆封包數")
         
         fig = px.bar(
-            chart_data, 
+            daily_unpacks, 
             x="event_date", 
-            y="撐了幾天", 
-            text="撐了幾天",
+            y="拆封包數", 
+            text="拆封包數",
             color="bean_name",
-            hover_data={"bean_name": True, "operator": True, "event_date": True, "撐了幾天": True},
-            labels={"event_date": "拆封日期", "撐了幾天": "撐了幾天 (天)", "bean_name": "咖啡豆"},
+            labels={"event_date": "拆封日期", "拆封包數": "開了幾包", "bean_name": "咖啡豆"},
             color_discrete_map={"皇家義大利": "#5c3d2e", "聖馬可綜合": "#8c6d58"}
         )
-        fig.update_traces(texttemplate='%{text} 天喝完', textposition='outside')
+        fig.update_traces(texttemplate='%{text} 包', textposition='outside')
         fig.update_layout(
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
             xaxis=dict(showgrid=False, title="開豆日期"),
-            yaxis=dict(showgrid=True, gridcolor="#eee", title="天數"),
+            yaxis=dict(showgrid=True, gridcolor="#eee", title="拆封數量 (包)"),
             margin=dict(l=20, r=20, t=30, b=20)
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info("💡 目前開豆紀錄還不到 2 筆，等大家拆到第 2 包，這裡就會長出喝咖啡的消耗趨勢圖囉！")
+        st.info("💡 目前開豆紀錄還不到 2 筆，等大家多登記幾次，這裡就會呈現各豆款的開豆歷史圖表囉！")
 
     st.markdown("#### 📋 過去所有的開豆與補貨紀錄")
     if not df.empty:
