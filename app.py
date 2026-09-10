@@ -12,121 +12,139 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 🎨 現代輕透咖啡館風格（告別生硬焊死感）
+# 🎨 一體成型流暢設計：同色系微透毛玻璃 + 懸浮連動
 st.markdown("""
 <style>
-    /* 全站溫潤奶茶底色 */
+    /* 全站單一主色調：深淺一致的暖燕麥摩卡色 */
     .stApp {
-        background-color: #F8F5F0;
-        color: #2D241E;
+        background: linear-gradient(180deg, #F5EFEB 0%, #EDE4DC 100%);
+        color: #38281F;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
     .block-container {
-        max-width: 1050px;
-        padding-top: 2rem;
-        padding-bottom: 3rem;
+        max-width: 1000px;
+        padding-top: 1.5rem;
+        padding-bottom: 4rem;
     }
 
-    /* 原生卡片容器注入輕透呼吸感 */
-    [data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
-        background-color: #FFFFFF;
-        border: 1px solid #EBE4DC !important;
-        border-radius: 16px !important;
-        box-shadow: 0 4px 20px rgba(78, 52, 46, 0.04) !important;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    /* 頂部 Sticky 懸浮卡片區：往下滑動時保持流暢連動 */
+    .sticky-stats {
+        position: sticky;
+        top: 0.8rem;
+        z-index: 99;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        background: rgba(245, 239, 235, 0.82);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 20px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 30px rgba(56, 40, 31, 0.06);
+        transition: all 0.3s ease;
     }
-    [data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
+
+    /* 內嵌指標卡片：告別死白，採用柔和微光 */
+    .stat-pill-box {
+        background: rgba(255, 255, 255, 0.65);
+        border: 1px solid rgba(222, 210, 200, 0.7);
+        border-radius: 14px;
+        padding: 12px 14px;
+        transition: all 0.2s ease;
+    }
+    .stat-pill-box:hover {
+        background: rgba(255, 255, 255, 0.9);
         transform: translateY(-2px);
-        box-shadow: 0 6px 24px rgba(78, 52, 46, 0.08) !important;
     }
-
-    /* 指標小標籤與數值樣式 */
     .stat-label {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 600;
-        color: #8C7A6B;
-        letter-spacing: 0.3px;
-        margin-bottom: 4px;
+        color: #7D6B5D;
     }
-    .stat-value {
-        font-size: 2.1rem;
+    .stat-num {
+        font-size: 1.7rem;
         font-weight: 800;
-        color: #2D241E;
-        line-height: 1.1;
+        color: #38281F;
+        line-height: 1.15;
     }
     .stat-unit {
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         font-weight: 500;
-        color: #8C7A6B;
-        margin-left: 2px;
+        color: #7D6B5D;
     }
-    .stat-footer {
-        font-size: 0.8rem;
-        color: #A19183;
-        margin-top: 6px;
-    }
-
-    /* 狀態晶片 */
-    .chip {
-        display: inline-block;
-        padding: 3px 10px;
-        border-radius: 12px;
+    .stat-note {
         font-size: 0.75rem;
-        font-weight: 700;
+        color: #9E8D7F;
+        margin-top: 4px;
     }
-    .chip-warning { background: #FDE8E8; color: #C81E1E; }
-    .chip-success { background: #EDF7EE; color: #2E7D32; }
 
-    /* 分頁導覽列（原生膠囊質感） */
+    /* 分頁標籤與背景融為一體 */
     .stTabs [data-baseweb="tab-list"] {
-        background-color: #EFE9E2;
-        padding: 5px;
-        border-radius: 14px;
-        gap: 6px;
+        background: rgba(216, 203, 193, 0.45);
+        backdrop-filter: blur(10px);
+        padding: 6px;
+        border-radius: 16px;
+        gap: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
     }
     .stTabs [data-baseweb="tab"] {
-        border-radius: 10px;
-        padding: 8px 18px;
+        border-radius: 12px;
+        padding: 8px 20px;
         font-weight: 600;
-        color: #7A695B;
-        border: none !important;
+        color: #695547 !important;
         background: transparent !important;
+        border: none !important;
         transition: all 0.2s ease;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #FFFFFF !important;
-        color: #2D241E !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+        background: #FFFFFF !important;
+        color: #38281F !important;
+        box-shadow: 0 4px 15px rgba(56, 40, 31, 0.08) !important;
     }
     .stTabs [data-baseweb="tab-highlight"] {
         display: none !important;
     }
 
-    /* 表單邊框與輸入框柔化 */
+    /* 表單區塊不再死白，採用同調半透明毛玻璃 */
     [data-testid="stForm"] {
-        background: #FFFFFF !important;
-        border: 1px solid #EBE4DC !important;
-        border-radius: 16px !important;
+        background: rgba(255, 255, 255, 0.5) !important;
+        backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+        border-radius: 20px !important;
         padding: 24px !important;
-        box-shadow: 0 4px 16px rgba(78, 52, 46, 0.03) !important;
+        box-shadow: 0 8px 30px rgba(56, 40, 31, 0.04) !important;
     }
 
-    /* 主按鈕：優雅烘焙咖啡棕 */
+    /* 單選項目微膠囊化 */
+    div[data-testid="stRadio"] > div {
+        gap: 10px;
+    }
+    div[data-testid="stRadio"] label {
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(222, 210, 200, 0.6);
+        padding: 6px 14px;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+    div[data-testid="stRadio"] label:hover {
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    /* 沉穩質感的烘焙咖啡豆主按鈕 */
     div.stButton > button[kind="primary"] {
-        background-color: #4A3428 !important;
-        color: #FFFFFF !important;
+        background: #4A3428 !important;
+        color: #F8F5F0 !important;
         border: none !important;
         border-radius: 12px !important;
-        padding: 10px 20px !important;
+        padding: 10px 24px !important;
         font-weight: 600 !important;
-        box-shadow: 0 4px 12px rgba(74, 52, 40, 0.2) !important;
+        box-shadow: 0 6px 18px rgba(74, 52, 40, 0.2) !important;
         transition: all 0.2s ease !important;
     }
     div.stButton > button[kind="primary"]:hover {
-        background-color: #38261C !important;
+        background: #3B281E !important;
         transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(74, 52, 40, 0.3) !important;
+        box-shadow: 0 8px 22px rgba(74, 52, 40, 0.28) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -152,15 +170,6 @@ def fetch_data():
     return df
 
 df = fetch_data()
-
-# 原生流暢 Header
-head_col1, head_col2 = st.columns([5, 1])
-with head_col1:
-    st.title("☕ 辦公室咖啡續命站")
-    st.caption("喝咖啡是基本人權！即時算出喝多快、哪天斷糧，缺豆前準時補貨～")
-with head_col2:
-    if st.button("🔄 重整", use_container_width=True):
-        st.rerun()
 
 # 拆分開豆與到貨
 unpack_df = df[df["event_type"] == "UNPACK"].copy() if not df.empty else pd.DataFrame()
@@ -204,65 +213,76 @@ elif len(unpack_df) >= 1:
     today = datetime.now().date()
     current_opened_days = (today - unpack_df["event_date"].iloc[-1]).days
 
-# 4. 原生 Border 容器（徹底解決焊死感）
+# 頁面主標題區
+head_l, head_r = st.columns([5, 1])
+with head_l:
+    st.markdown("## ☕ 辦公室咖啡續命站")
+    st.caption("喝咖啡是基本人權！掌握消耗節奏、精準推算斷糧日～")
+with head_r:
+    if st.button("🔄 重整", use_container_width=True):
+        st.rerun()
+
+# 4. 懸浮連動儀表板（往下滾動時會優雅跟隨）
+st.markdown('<div class="sticky-stats">', unsafe_allow_html=True)
 c1, c2, c3, c4 = st.columns(4)
 
 with c1:
-    with st.container(border=True):
-        st.markdown('<div class="stat-label">📦 櫃子裡還剩</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="stat-value">{current_stock}<span class="stat-unit">包未拆</span></div>', unsafe_allow_html=True)
-        chip_cls = "chip-warning" if current_stock <= 2 else "chip-success"
-        chip_txt = "🚨 庫存告急" if current_stock <= 2 else "✨ 儲備充裕"
-        st.markdown(f"""
-        <div class="stat-footer">
-            <span class="chip {chip_cls}">{chip_txt}</span>
-            <div style="margin-top:5px; font-weight:600; color:#5D4037;">皇家: {royal_stock} ｜ 聖馬可: {marco_stock}</div>
-        </div>
-        """, unsafe_allow_html=True)
+    tag = "🚨 庫存告急" if current_stock <= 2 else "✨ 存量充足"
+    st.markdown(f"""
+    <div class="stat-pill-box">
+        <div class="stat-label">📦 櫃子還剩</div>
+        <div class="stat-num">{current_stock}<span class="stat-unit"> 包未拆</span></div>
+        <div class="stat-note"><b>{tag}</b> (皇家 {royal_stock} ｜ 聖馬可 {marco_stock})</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with c2:
-    with st.container(border=True):
-        st.markdown('<div class="stat-label">⚡ 大家喝有多快</div>', unsafe_allow_html=True)
-        val = f"{avg_days}<span class='stat-unit'>天/包</span>" if avg_days else "計算中"
-        sub = "約這速度喝完一包" if avg_days else "開過不同天的豆會算出"
-        st.markdown(f'<div class="stat-value">{val}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="stat-footer">{sub}</div>', unsafe_allow_html=True)
+    val_spd = f"{avg_days}<span class='stat-unit'> 天/包</span>" if avg_days else "計算中"
+    note_spd = "約這速度喝完一包" if avg_days else "多開幾次自動計算"
+    st.markdown(f"""
+    <div class="stat-pill-box">
+        <div class="stat-label">⚡ 大家喝多快</div>
+        <div class="stat-num">{val_spd}</div>
+        <div class="stat-note">{note_spd}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with c3:
-    with st.container(border=True):
-        st.markdown('<div class="stat-label">⏳ 這包還能撐多久</div>', unsafe_allow_html=True)
-        if days_left is not None:
-            val_l = f"約 {days_left}<span class='stat-unit'>天</span>"
-            sub_l = f"現有這批已開第 {current_opened_days} 天"
-        elif len(unpack_df) >= 1:
-            val_l = f"第 {current_opened_days}<span class='stat-unit'>天</span>"
-            sub_l = "累積下批開豆開始倒數"
-        else:
-            val_l = "尚未開"
-            sub_l = "快去拆第一包～"
-        st.markdown(f'<div class="stat-value">{val_l}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="stat-footer">{sub_l}</div>', unsafe_allow_html=True)
+    if days_left is not None:
+        val_l = f"約 {days_left}<span class='stat-unit'> 天</span>"
+        note_l = f"這批已開第 {current_opened_days} 天"
+    elif len(unpack_df) >= 1:
+        val_l = f"第 {current_opened_days}<span class='stat-unit'> 天</span>"
+        note_l = "累積下批會開始倒數"
+    else:
+        val_l = "尚未開"
+        note_l = "快去拆第一包～"
+    st.markdown(f"""
+    <div class="stat-pill-box">
+        <div class="stat-label">⏳ 現有能撐多久</div>
+        <div class="stat-num">{val_l}</div>
+        <div class="stat-note">{note_l}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with c4:
-    with st.container(border=True):
-        st.markdown('<div class="stat-label">📅 預估哪天見底</div>', unsafe_allow_html=True)
-        val_d = f"{estimated_finish_date}" if estimated_finish_date else "推算中"
-        sub_d = "提早叫貨不斷糧！" if estimated_finish_date else "資料齊全後預測"
-        st.markdown(f'<div class="stat-value" style="font-size:1.75rem;">{val_d}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="stat-footer">{sub_d}</div>', unsafe_allow_html=True)
+    val_d = f"{estimated_finish_date}" if estimated_finish_date else "推算中"
+    note_d = "提早叫貨不斷糧！" if estimated_finish_date else "資料齊全後預測"
+    st.markdown(f"""
+    <div class="stat-pill-box">
+        <div class="stat-label">📅 預估見底日</div>
+        <div class="stat-num" style="font-size:1.45rem;">{val_d}</div>
+        <div class="stat-note">{note_d}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.write("")
+st.markdown('</div>', unsafe_allow_html=True)
 
-if current_stock == 0:
-    st.error("😱 **重大斷糧警報**：櫃子裡已經完全**沒有庫存**了！這包喝完就真的沒了，快去叫貨！")
-elif current_stock <= 2:
-    st.warning(f"⚠️ **咖啡告急**：只剩最後 {current_stock} 包存貨！建議現在就可以準備下單囉～")
-
-# 5. 操作分頁
+# 5. 操作分頁（融合式背景）
 tab1, tab2, tab3 = st.tabs(["☕ 我拆了新豆子！", "📦 咖啡豆到貨了！", "📊 飲用紀錄與趨勢"])
 
 with tab1:
-    st.markdown("##### 拆了新豆子？選一下就搞定（免打字）")
+    st.markdown("#### 拆了新豆子？選一下就搞定（免打字）")
     with st.form("unpack_form", clear_on_submit=True):
         c1, c2 = st.columns(2)
         with c1:
@@ -293,7 +313,7 @@ with tab1:
                 st.rerun()
 
 with tab2:
-    st.markdown("##### 買新豆子送到了？選一下就入庫")
+    st.markdown("#### 買新豆子送到了？選一下就入庫")
     with st.form("restock_form", clear_on_submit=True):
         r1, r2 = st.columns(2)
         with r1:
@@ -303,7 +323,7 @@ with tab2:
             r_qty = st.number_input("來了幾包？", min_value=1, value=2, step=1)
             r_date = st.date_input("到貨日期", value=datetime.now().date())
             
-        r_memo = st.text_input("備註（選填）", placeholder="例如：特價購入、單價 450 元")
+        r_memo = st.text_input("備註說明（選填）", placeholder="例如：特價購入、單價 450 元")
         
         btn_stock = st.form_submit_button("📦 把豆子放進櫃子（入庫）", use_container_width=True, type="primary")
         if btn_stock:
@@ -324,7 +344,7 @@ with tab2:
                 st.rerun()
 
 with tab3:
-    st.markdown("##### 📈 開豆歷史與消耗節奏")
+    st.markdown("#### 📈 開豆歷史與消耗節奏")
     if len(unpack_df) >= 2:
         daily_unpacks = unpack_df.groupby(["event_date", "bean_name"]).size().reset_index(name="拆封包數")
         
@@ -339,18 +359,18 @@ with tab3:
         )
         fig.update_traces(texttemplate='%{text} 包', textposition='outside')
         fig.update_layout(
-            plot_bgcolor="rgba(255,255,255,0)",
-            paper_bgcolor="rgba(255,255,255,0)",
-            font=dict(color="#2D241E"),
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#38281F"),
             xaxis=dict(showgrid=False, title="開豆日期"),
-            yaxis=dict(showgrid=True, gridcolor="#EBE4DC", title="拆封數量 (包)"),
+            yaxis=dict(showgrid=True, gridcolor="rgba(222, 210, 200, 0.4)", title="拆封數量 (包)"),
             margin=dict(l=10, r=10, t=25, b=20)
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("💡 目前開豆紀錄還不到 2 筆，等大家多登記幾次，這裡就會呈現圖表囉！")
 
-    st.markdown("##### 📋 歷史明細紀錄")
+    st.markdown("#### 📋 歷史明細紀錄")
     if not df.empty:
         display_df = df.copy()
         display_df["動作"] = display_df["event_type"].map({"UNPACK": "☕ 拆封開喝", "RESTOCK": "📦 進貨補庫存"})
