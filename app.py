@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 溫暖質感的 CSS
+# 溫暖質感 CSS
 st.markdown("""
 <style>
     .status-card {
@@ -104,10 +104,7 @@ if len(unpack_df) >= 2:
     latest_date = sorted_unpacks["event_date"].iloc[-1]
     span_days = (latest_date - first_date).days
     
-    # 若有跨不同日期開豆，計算平均每包喝幾天
     if span_days > 0 and len(sorted_unpacks) > 1:
-        # 平均每包天數 = 總跨度天數 / (總開豆包數 - 最新這批次)
-        # 用近期的開豆記錄做滾動推估
         recent_unpacks = sorted_unpacks.tail(6)
         r_span = (recent_unpacks["event_date"].iloc[-1] - recent_unpacks["event_date"].iloc[0]).days
         if r_span > 0:
@@ -118,9 +115,7 @@ if len(unpack_df) >= 2:
         today = datetime.now().date()
         current_opened_days = (today - latest_date).days
         
-        # 查最新這天一共開了幾包
         latest_batch_count = len(sorted_unpacks[sorted_unpacks["event_date"] == latest_date])
-        # 這批總共預估能撐的天數 = 平均每包天數 * 本次開的包數
         total_batch_expected_days = avg_days * latest_batch_count
         
         days_left = max(0, int(total_batch_expected_days - current_opened_days))
@@ -202,40 +197,36 @@ elif current_stock <= 2:
 tab1, tab2, tab3 = st.tabs(["☕ 我拆了新豆子！", "📦 咖啡豆到貨了！", "📊 飲用紀錄與趨勢"])
 
 with tab1:
-    st.markdown("#### 拆了新豆子？選一下是哪一款與包數～")
+    st.markdown("#### 拆了新豆子？選一下就搞定（免打字）～")
     with st.form("unpack_form", clear_on_submit=True):
         c1, c2 = st.columns(2)
         with c1:
             bean_choice = st.radio(
-                "這次拆的是哪一款豆子？", 
+                "這次拆的是哪一款？", 
                 ["皇家義大利", "聖馬可綜合", "其他豆款"],
                 horizontal=True
             )
             custom_bean = ""
             if bean_choice == "其他豆款":
                 custom_bean = st.text_input("請輸入其他豆款名稱")
-            
-            # ✨ 新增：一次開幾包
-            unpack_qty = st.number_input("這次一次開了幾包？", min_value=1, max_value=10, value=1, step=1, help="例如兩台咖啡機各倒一包，就選 2 包")
         with c2:
-            who = st.text_input("你是哪位善心人士？（大名/暱稱）", placeholder="例如：Gary、Alice、小王")
-            date = st.date_input("什麼時候拆的？", value=datetime.now().date())
+            unpack_qty = st.number_input("這次一次開了幾包？", min_value=1, max_value=10, value=1, step=1)
+            event_d = st.date_input("拆封日期", value=datetime.now().date())
             
-        flavor = st.text_input("這包有什麼心得筆記嗎？（選填）", placeholder="例如：一次倒兩包進大咖啡機、這批香氣很濃")
+        flavor = st.text_input("心得或備註（選填）", placeholder="例如：開兩包倒大機器、這批很香")
         
         btn_open = st.form_submit_button("🚀 開喝！登記拆封", use_container_width=True, type="primary")
         if btn_open:
             actual_bean = custom_bean if bean_choice == "其他豆款" else bean_choice
-            if not actual_bean or not who:
-                st.error("請確認豆款與你的名字有填寫喔！")
+            if not actual_bean:
+                st.error("請確認豆款名稱喔！")
             else:
-                # 依開的包數批次寫入紀錄
                 records = [{
                     "event_type": "UNPACK",
                     "bean_name": actual_bean,
                     "weight_g": 454,
-                    "operator": who,
-                    "event_date": str(date),
+                    "operator": "善心同事",  # 免填名字，系統自動代入
+                    "event_date": str(event_d),
                     "note": f"{flavor} (一次開 {unpack_qty} 包之 #{i+1})" if unpack_qty > 1 and flavor else (f"一次開 {unpack_qty} 包之第 {i+1} 包" if unpack_qty > 1 else flavor)
                 } for i in range(unpack_qty)]
                 
@@ -272,7 +263,7 @@ with tab2:
                     "event_type": "RESTOCK",
                     "bean_name": actual_r_bean,
                     "weight_g": 454,
-                    "operator": "公司採購",
+                    "operator": "公司採購",  # 免填名字
                     "event_date": str(r_date),
                     "note": f"{r_memo} (第 {i+1} 包)" if r_qty > 1 and r_memo else (f"批次入庫第 {i+1} 包" if r_qty > 1 else r_memo)
                 } for i in range(r_qty)]
@@ -283,7 +274,6 @@ with tab2:
 with tab3:
     st.markdown("#### 📈 開豆歷史與消耗節奏")
     if len(unpack_df) >= 2:
-        # 按日期統計每天拆了幾包
         daily_unpacks = unpack_df.groupby(["event_date", "bean_name"]).size().reset_index(name="拆封包數")
         
         fig = px.bar(
@@ -316,11 +306,10 @@ with tab3:
             "event_date": "日期",
             "bean_name": "咖啡豆款",
             "weight_g": "克數",
-            "operator": "登記人",
-            "note": "備註/評語"
+            "note": "備註說明"
         })
         st.dataframe(
-            display_df[["編號", "日期", "動作", "咖啡豆款", "克數", "登記人", "備註/評語"]],
+            display_df[["編號", "日期", "動作", "咖啡豆款", "克數", "備註說明"]],
             use_container_width=True,
             hide_index=True
         )
