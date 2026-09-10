@@ -12,139 +12,72 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 🎨 一體成型流暢設計：同色系微透毛玻璃 + 懸浮連動
+# 🎨 乾淨自然、無破版的燕麥暖奶風格
 st.markdown("""
 <style>
-    /* 全站單一主色調：深淺一致的暖燕麥摩卡色 */
+    /* 全站單一底色，上下滑動毫無色差斷層 */
     .stApp {
-        background: linear-gradient(180deg, #F5EFEB 0%, #EDE4DC 100%);
+        background-color: #F4EFEA;
         color: #38281F;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
     .block-container {
-        max-width: 1000px;
+        max-width: 960px;
         padding-top: 1.5rem;
-        padding-bottom: 4rem;
+        padding-bottom: 3rem;
     }
 
-    /* 頂部 Sticky 懸浮卡片區：往下滑動時保持流暢連動 */
-    .sticky-stats {
-        position: sticky;
-        top: 0.8rem;
-        z-index: 99;
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        background: rgba(245, 239, 235, 0.82);
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        border-radius: 20px;
-        padding: 16px 20px;
-        margin-bottom: 24px;
-        box-shadow: 0 8px 30px rgba(56, 40, 31, 0.06);
-        transition: all 0.3s ease;
+    /* 原生卡片容器風格微調 */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #FCFAF7 !important;
+        border: 1px solid #E5DBD1 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 2px 10px rgba(56, 40, 31, 0.03) !important;
     }
 
-    /* 內嵌指標卡片：告別死白，採用柔和微光 */
-    .stat-pill-box {
-        background: rgba(255, 255, 255, 0.65);
-        border: 1px solid rgba(222, 210, 200, 0.7);
-        border-radius: 14px;
-        padding: 12px 14px;
-        transition: all 0.2s ease;
-    }
-    .stat-pill-box:hover {
-        background: rgba(255, 255, 255, 0.9);
-        transform: translateY(-2px);
-    }
-    .stat-label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #7D6B5D;
-    }
-    .stat-num {
-        font-size: 1.7rem;
-        font-weight: 800;
-        color: #38281F;
-        line-height: 1.15;
-    }
-    .stat-unit {
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: #7D6B5D;
-    }
-    .stat-note {
-        font-size: 0.75rem;
-        color: #9E8D7F;
-        margin-top: 4px;
-    }
-
-    /* 分頁標籤與背景融為一體 */
+    /* 分頁導覽列自然融入 */
     .stTabs [data-baseweb="tab-list"] {
-        background: rgba(216, 203, 193, 0.45);
-        backdrop-filter: blur(10px);
-        padding: 6px;
-        border-radius: 16px;
-        gap: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.4);
+        background-color: #E8DFD5;
+        padding: 4px;
+        border-radius: 12px;
+        gap: 6px;
     }
     .stTabs [data-baseweb="tab"] {
-        border-radius: 12px;
-        padding: 8px 20px;
+        border-radius: 8px;
+        padding: 6px 16px;
         font-weight: 600;
-        color: #695547 !important;
-        background: transparent !important;
+        color: #695547;
         border: none !important;
-        transition: all 0.2s ease;
+        background: transparent !important;
     }
     .stTabs [aria-selected="true"] {
-        background: #FFFFFF !important;
+        background-color: #FCFAF7 !important;
         color: #38281F !important;
-        box-shadow: 0 4px 15px rgba(56, 40, 31, 0.08) !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
     }
     .stTabs [data-baseweb="tab-highlight"] {
         display: none !important;
     }
 
-    /* 表單區塊不再死白，採用同調半透明毛玻璃 */
+    /* 表單背景融入 */
     [data-testid="stForm"] {
-        background: rgba(255, 255, 255, 0.5) !important;
-        backdrop-filter: blur(12px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.6) !important;
-        border-radius: 20px !important;
-        padding: 24px !important;
-        box-shadow: 0 8px 30px rgba(56, 40, 31, 0.04) !important;
+        background-color: #FCFAF7 !important;
+        border: 1px solid #E5DBD1 !important;
+        border-radius: 14px !important;
+        padding: 20px !important;
     }
 
-    /* 單選項目微膠囊化 */
-    div[data-testid="stRadio"] > div {
-        gap: 10px;
-    }
-    div[data-testid="stRadio"] label {
-        background: rgba(255, 255, 255, 0.6);
-        border: 1px solid rgba(222, 210, 200, 0.6);
-        padding: 6px 14px;
-        border-radius: 10px;
-        transition: all 0.2s ease;
-    }
-    div[data-testid="stRadio"] label:hover {
-        background: rgba(255, 255, 255, 0.95);
-    }
-
-    /* 沉穩質感的烘焙咖啡豆主按鈕 */
+    /* 主按鈕沉穩深焙色 */
     div.stButton > button[kind="primary"] {
-        background: #4A3428 !important;
-        color: #F8F5F0 !important;
+        background-color: #4A3428 !important;
+        color: #FCFAF7 !important;
         border: none !important;
-        border-radius: 12px !important;
-        padding: 10px 24px !important;
+        border-radius: 10px !important;
+        padding: 10px 20px !important;
         font-weight: 600 !important;
-        box-shadow: 0 6px 18px rgba(74, 52, 40, 0.2) !important;
-        transition: all 0.2s ease !important;
     }
     div.stButton > button[kind="primary"]:hover {
-        background: #3B281E !important;
-        transform: translateY(-1px);
-        box-shadow: 0 8px 22px rgba(74, 52, 40, 0.28) !important;
+        background-color: #38261C !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -213,82 +146,74 @@ elif len(unpack_df) >= 1:
     today = datetime.now().date()
     current_opened_days = (today - unpack_df["event_date"].iloc[-1]).days
 
-# 頁面主標題區
-head_l, head_r = st.columns([5, 1])
-with head_l:
-    st.markdown("## ☕ 辦公室咖啡續命站")
+# 頁首乾淨排版
+col_h1, col_h2 = st.columns([6, 1])
+with col_h1:
+    st.title("☕ 辦公室咖啡續命站")
     st.caption("喝咖啡是基本人權！掌握消耗節奏、精準推算斷糧日～")
-with head_r:
-    if st.button("🔄 重整", use_container_width=True):
+with col_h2:
+    st.write("")
+    if st.button("🔄 重新載入", use_container_width=True):
         st.rerun()
 
-# 4. 懸浮連動儀表板（往下滾動時會優雅跟隨）
-st.markdown('<div class="sticky-stats">', unsafe_allow_html=True)
+# 4. 原生 Container 卡片（不使用易破版的外部 HTML 容器）
 c1, c2, c3, c4 = st.columns(4)
 
 with c1:
-    tag = "🚨 庫存告急" if current_stock <= 2 else "✨ 存量充足"
-    st.markdown(f"""
-    <div class="stat-pill-box">
-        <div class="stat-label">📦 櫃子還剩</div>
-        <div class="stat-num">{current_stock}<span class="stat-unit"> 包未拆</span></div>
-        <div class="stat-note"><b>{tag}</b> (皇家 {royal_stock} ｜ 聖馬可 {marco_stock})</div>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.container(border=True):
+        st.caption("📦 櫃子還剩")
+        st.subheader(f"{current_stock} 包未拆")
+        stock_msg = "🚨 庫存告急" if current_stock <= 2 else "✨ 存量充足"
+        st.caption(f"{stock_msg} (皇家 {royal_stock} ｜ 聖馬可 {marco_stock})")
 
 with c2:
-    val_spd = f"{avg_days}<span class='stat-unit'> 天/包</span>" if avg_days else "計算中"
-    note_spd = "約這速度喝完一包" if avg_days else "多開幾次自動計算"
-    st.markdown(f"""
-    <div class="stat-pill-box">
-        <div class="stat-label">⚡ 大家喝多快</div>
-        <div class="stat-num">{val_spd}</div>
-        <div class="stat-note">{note_spd}</div>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.container(border=True):
+        st.caption("⚡ 大家喝多快")
+        if avg_days:
+            st.subheader(f"{avg_days} 天/包")
+            st.caption("大約這速度消滅一包")
+        else:
+            st.subheader("計算中")
+            st.caption("開過不同天數豆子會自動算出")
 
 with c3:
-    if days_left is not None:
-        val_l = f"約 {days_left}<span class='stat-unit'> 天</span>"
-        note_l = f"這批已開第 {current_opened_days} 天"
-    elif len(unpack_df) >= 1:
-        val_l = f"第 {current_opened_days}<span class='stat-unit'> 天</span>"
-        note_l = "累積下批會開始倒數"
-    else:
-        val_l = "尚未開"
-        note_l = "快去拆第一包～"
-    st.markdown(f"""
-    <div class="stat-pill-box">
-        <div class="stat-label">⏳ 現有能撐多久</div>
-        <div class="stat-num">{val_l}</div>
-        <div class="stat-note">{note_l}</div>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.container(border=True):
+        st.caption("⏳ 現有能撐多久")
+        if days_left is not None:
+            st.subheader(f"約 {days_left} 天")
+            st.caption(f"這批已開喝第 {current_opened_days} 天")
+        elif len(unpack_df) >= 1:
+            st.subheader(f"第 {current_opened_days} 天")
+            st.caption("累積下一批開豆開始倒數")
+        else:
+            st.subheader("尚未開豆")
+            st.caption("快去茶水間拆第一包～")
 
 with c4:
-    val_d = f"{estimated_finish_date}" if estimated_finish_date else "推算中"
-    note_d = "提早叫貨不斷糧！" if estimated_finish_date else "資料齊全後預測"
-    st.markdown(f"""
-    <div class="stat-pill-box">
-        <div class="stat-label">📅 預估見底日</div>
-        <div class="stat-num" style="font-size:1.45rem;">{val_d}</div>
-        <div class="stat-note">{note_d}</div>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.container(border=True):
+        st.caption("📅 預估見底日")
+        if estimated_finish_date:
+            st.subheader(f"{estimated_finish_date}")
+            st.caption("提早叫貨不斷糧！")
+        else:
+            st.subheader("推算中")
+            st.caption("紀錄齊全後自動預測")
 
-st.markdown('</div>', unsafe_allow_html=True)
+st.write("")
 
-# 5. 操作分頁（融合式背景）
+# 5. 操作分頁
 tab1, tab2, tab3 = st.tabs(["☕ 我拆了新豆子！", "📦 咖啡豆到貨了！", "📊 飲用紀錄與趨勢"])
 
 with tab1:
     st.markdown("#### 拆了新豆子？選一下就搞定（免打字）")
     with st.form("unpack_form", clear_on_submit=True):
-        c1, c2 = st.columns(2)
-        with c1:
+        f1, f2 = st.columns(2)
+        with f1:
             bean_choice = st.radio("拆哪一款？", ["皇家義大利", "聖馬可綜合", "其他豆款"], horizontal=True)
-            custom_bean = st.text_input("輸入自訂豆款") if bean_choice == "其他豆款" else ""
-        with c2:
+            custom_bean = ""
+            if bean_choice == "其他豆款":
+                custom_bean = st.text_input("輸入自訂豆款名稱")
+        with f2:
             unpack_qty = st.number_input("開了幾包？", min_value=1, max_value=10, value=1, step=1)
             event_d = st.date_input("拆封日期", value=datetime.now().date())
             
@@ -298,7 +223,7 @@ with tab1:
         if btn_open:
             actual_bean = custom_bean if bean_choice == "其他豆款" else bean_choice
             if not actual_bean:
-                st.error("請填寫豆款名稱！")
+                st.error("請確認豆款名稱！")
             else:
                 records = [{
                     "event_type": "UNPACK",
@@ -318,7 +243,9 @@ with tab2:
         r1, r2 = st.columns(2)
         with r1:
             r_bean_choice = st.radio("送來哪一款？", ["皇家義大利", "聖馬可綜合", "其他豆款"], horizontal=True)
-            r_custom = st.text_input("輸入自訂到貨豆款") if r_bean_choice == "其他豆款" else ""
+            r_custom = ""
+            if r_bean_choice == "其他豆款":
+                r_custom = st.text_input("輸入自訂到貨豆款")
         with r2:
             r_qty = st.number_input("來了幾包？", min_value=1, value=2, step=1)
             r_date = st.date_input("到貨日期", value=datetime.now().date())
@@ -347,7 +274,6 @@ with tab3:
     st.markdown("#### 📈 開豆歷史與消耗節奏")
     if len(unpack_df) >= 2:
         daily_unpacks = unpack_df.groupby(["event_date", "bean_name"]).size().reset_index(name="拆封包數")
-        
         fig = px.bar(
             daily_unpacks, 
             x="event_date", 
@@ -363,7 +289,7 @@ with tab3:
             paper_bgcolor="rgba(0,0,0,0)",
             font=dict(color="#38281F"),
             xaxis=dict(showgrid=False, title="開豆日期"),
-            yaxis=dict(showgrid=True, gridcolor="rgba(222, 210, 200, 0.4)", title="拆封數量 (包)"),
+            yaxis=dict(showgrid=True, gridcolor="#E5DBD1", title="拆封數量 (包)"),
             margin=dict(l=10, r=10, t=25, b=20)
         )
         st.plotly_chart(fig, use_container_width=True)
