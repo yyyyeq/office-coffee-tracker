@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 溫暖又親切的樣式設計
+# 溫暖質感的 CSS
 st.markdown("""
 <style>
     .status-card {
@@ -36,7 +36,7 @@ st.markdown("""
     }
     .status-sub {
         font-size: 0.8rem;
-        color: #a89f91;
+        color: #888;
         margin-top: 4px;
     }
     .badge {
@@ -49,7 +49,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 2. Supabase 連線
+# 2. 連線 Supabase
 @st.cache_resource
 def init_supabase() -> Client:
     url = st.secrets["SUPABASE_URL"]
@@ -71,7 +71,7 @@ def fetch_data():
 
 df = fetch_data()
 
-# 頁面大標題
+# 頁首標題
 col_title, col_btn = st.columns([4, 1])
 with col_title:
     st.title("☕ 辦公室咖啡續命站")
@@ -80,7 +80,7 @@ with col_btn:
     if st.button("🔄 重新載入", use_container_width=True):
         st.rerun()
 
-# 拆分開豆與到貨
+# 分流資料
 unpack_df = df[df["event_type"] == "UNPACK"].copy() if not df.empty else pd.DataFrame()
 restock_df = df[df["event_type"] == "RESTOCK"].copy() if not df.empty else pd.DataFrame()
 
@@ -88,6 +88,10 @@ restock_df = df[df["event_type"] == "RESTOCK"].copy() if not df.empty else pd.Da
 total_restocked = len(restock_df)
 total_unpacked = len(unpack_df)
 current_stock = max(0, total_restocked - total_unpacked)
+
+# 分豆款統計未拆封包數
+royal_stock = max(0, len(restock_df[restock_df["bean_name"] == "皇家義大利"]) - len(unpack_df[unpack_df["bean_name"] == "皇家義大利"]))
+marco_stock = max(0, len(restock_df[restock_df["bean_name"] == "聖馬可綜合"]) - len(unpack_df[unpack_df["bean_name"] == "聖馬可綜合"]))
 
 avg_days = None
 days_left = None
@@ -122,13 +126,18 @@ with c1:
     <div class="status-card">
         <div class="status-title">📦 櫃子裡還剩幾包？</div>
         <div class="status-number">{current_stock} <span style="font-size: 1.1rem; font-weight: normal; color: #777;">包未拆</span></div>
-        <div class="status-sub"><span class="badge" style="background:{bg}; color:{color};">{badge_text}</span></div>
+        <div class="status-sub">
+            <span class="badge" style="background:{bg}; color:{color};">{badge_text}</span>
+            <div style="margin-top: 4px; font-size: 0.75rem; color: #666;">
+                👑 皇家: {royal_stock} 包 ｜ ☕ 聖馬可: {marco_stock} 包
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
 with c2:
     v_speed = f"{avg_days} <span style='font-size: 1rem; font-weight: normal; color: #777;'>天/包</span>" if avg_days else "<span style='font-size:1.2rem; color:#aaa;'>抓數據中...</span>"
-    sub_speed = "大概這速度消滅一包" if avg_days else "至少要開過 2 包才算得出"
+    sub_speed = "大約這速度消滅一包" if avg_days else "至少開過 2 包才算得出"
     st.markdown(f"""
     <div class="status-card">
         <div class="status-title">⚡ 大家喝有多快？</div>
@@ -158,7 +167,7 @@ with c3:
 
 with c4:
     v_date = f"{estimated_finish_date}" if estimated_finish_date else "<span style='font-size:1.2rem; color:#aaa;'>推算中...</span>"
-    sub_date = "提前幾天叫貨才不會斷糧！" if estimated_finish_date else "資料夠了會自動預測"
+    sub_date = "提前叫貨才不會斷糧！" if estimated_finish_date else "資料夠了會自動預測"
     st.markdown(f"""
     <div class="status-card">
         <div class="status-title">📅 預估哪天見底？</div>
@@ -169,7 +178,7 @@ with c4:
 
 st.write("")
 
-# 俏皮警示
+# 預警提示
 if current_stock == 0:
     st.error("😱 **重大警報**：櫃子裡已經**沒有半包存貨**了！這包喝完就真的沒了，快去叫貨！")
 elif current_stock == 1:
@@ -179,27 +188,34 @@ elif current_stock == 1:
 tab1, tab2, tab3 = st.tabs(["☕ 我拆了一包新豆子！", "📦 咖啡豆到貨了！", "📊 飲用紀錄與趨勢"])
 
 with tab1:
-    st.markdown("#### 拆了一包新的？隨手幫大家記一下～")
+    st.markdown("#### 拆了一包新的？點一下是哪款～")
     with st.form("unpack_form", clear_on_submit=True):
         c1, c2 = st.columns(2)
         with c1:
-            bean = st.text_input("這包是什麼豆子？", placeholder="例如：耶加雪菲、深焙曼特寧、好市多黃袋")
-            weight = st.radio("包裝大概多大？", [454, 227, 500, 1000], format_func=lambda x: f"{x}g (標準一磅)" if x==454 else (f"{x}g (半磅裝)" if x==227 else f"{x}g"), horizontal=True)
+            bean_choice = st.radio(
+                "這次拆的是哪一款豆子？", 
+                ["皇家義大利", "聖馬可綜合", "其他豆款"],
+                horizontal=True
+            )
+            custom_bean = ""
+            if bean_choice == "其他豆款":
+                custom_bean = st.text_input("請輸入其他豆款名稱")
         with c2:
             who = st.text_input("你是哪位善心人士？（大名/暱稱）", placeholder="例如：Gary、Alice、小王")
             date = st.date_input("什麼時候拆的？", value=datetime.now().date())
             
-        flavor = st.text_input("這包有什麼特色或評語嗎？（選填）", placeholder="例如：酸度很順、帶可可香、上次買太苦這次換換看")
+        flavor = st.text_input("這包有什麼心得筆記嗎？（選填）", placeholder="例如：這批比較香、今天人多沖特別濃")
         
         btn_open = st.form_submit_button("🚀 開喝！登記拆封", use_container_width=True, type="primary")
         if btn_open:
-            if not bean or not who:
-                st.error("豆子名字跟你的名字要填一下喔！大家才知道現在在喝什麼～")
+            actual_bean = custom_bean if bean_choice == "其他豆款" else bean_choice
+            if not actual_bean or not who:
+                st.error("請確認豆款與你的名字有填寫喔！")
             else:
                 supabase.table("coffee_records").insert({
                     "event_type": "UNPACK",
-                    "bean_name": bean,
-                    "weight_g": weight,
+                    "bean_name": actual_bean,
+                    "weight_g": 454,
                     "operator": who,
                     "event_date": str(date),
                     "note": flavor
@@ -208,35 +224,40 @@ with tab1:
                 st.rerun()
 
 with tab2:
-    st.markdown("#### 買新豆子送到了？加進庫存裡！")
+    st.markdown("#### 買新豆子送到了？選一下就入庫！")
     with st.form("restock_form", clear_on_submit=True):
         r1, r2 = st.columns(2)
         with r1:
-            r_bean = st.text_input("這次買了什麼豆款？", placeholder="例如：湛盧 經典綜合豆、好市多星巴克")
+            r_bean_choice = st.radio(
+                "這次送來的是哪一款？", 
+                ["皇家義大利", "聖馬可綜合", "其他豆款"],
+                horizontal=True
+            )
+            r_custom = ""
+            if r_bean_choice == "其他豆款":
+                r_custom = st.text_input("請輸入自訂豆款名稱")
         with r2:
             r_qty = st.number_input("這次來了幾包？", min_value=1, value=2, step=1)
-            
-        r3, r4 = st.columns(2)
-        with r3:
             r_date = st.date_input("到貨日期", value=datetime.now().date())
-        with r4:
-            r_memo = st.text_input("備註說明（選填）", placeholder="例如：特價購入、單價 450 元")
+            
+        r_memo = st.text_input("備註說明（選填）", placeholder="例如：特價購入、單價 450 元")
         
         btn_stock = st.form_submit_button("📦 把豆子放進櫃子（入庫）", use_container_width=True)
         if btn_stock:
-            if not r_bean:
-                st.error("請填寫一下到貨的豆子品名喔！")
+            actual_r_bean = r_custom if r_bean_choice == "其他豆款" else r_bean_choice
+            if not actual_r_bean:
+                st.error("請確認到貨的豆款名稱！")
             else:
                 records = [{
                     "event_type": "RESTOCK",
-                    "bean_name": r_bean,
+                    "bean_name": actual_r_bean,
                     "weight_g": 454,
-                    "operator": "公司採購",  # 免填，系統自動帶入
+                    "operator": "公司採購",
                     "event_date": str(r_date),
                     "note": f"{r_memo} (第 {i+1} 包)" if r_qty > 1 and r_memo else (f"批次入庫第 {i+1} 包" if r_qty > 1 else r_memo)
                 } for i in range(r_qty)]
                 supabase.table("coffee_records").insert(records).execute()
-                st.toast(f"📦 庫存已增加 {r_qty} 包！辦公室又有精神啦～")
+                st.toast(f"📦 已將 {r_qty} 包「{actual_r_bean}」放入庫存！")
                 st.rerun()
 
 with tab3:
@@ -252,9 +273,10 @@ with tab3:
             x="event_date", 
             y="撐了幾天", 
             text="撐了幾天",
+            color="bean_name",
             hover_data={"bean_name": True, "operator": True, "event_date": True, "撐了幾天": True},
-            labels={"event_date": "拆封日期", "撐了幾天": "撐了幾天 (天)"},
-            color_discrete_sequence=["#8c6d58"]
+            labels={"event_date": "拆封日期", "撐了幾天": "撐了幾天 (天)", "bean_name": "咖啡豆"},
+            color_discrete_map={"皇家義大利": "#5c3d2e", "聖馬可綜合": "#8c6d58"}
         )
         fig.update_traces(texttemplate='%{text} 天喝完', textposition='outside')
         fig.update_layout(
@@ -275,13 +297,13 @@ with tab3:
         display_df = display_df.rename(columns={
             "id": "編號",
             "event_date": "日期",
-            "bean_name": "咖啡豆名",
+            "bean_name": "咖啡豆款",
             "weight_g": "克數",
-            "operator": "經手/開豆人",
+            "operator": "登記人",
             "note": "備註/評語"
         })
         st.dataframe(
-            display_df[["編號", "日期", "動作", "咖啡豆名", "克數", "經手/開豆人", "備註/評語"]],
+            display_df[["編號", "日期", "動作", "咖啡豆款", "克數", "登記人", "備註/評語"]],
             use_container_width=True,
             hide_index=True
         )
