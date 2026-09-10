@@ -12,46 +12,44 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 🎨 超蝦趴專屬特調：漸層光澤卡片 + 燕麥奶一體成型表單
+# 🎨 強力 CSS 修正：修復標題削頂、移除贅框、強制深焙漸層按鈕
 st.markdown("""
 <style>
     /* 全站溫潤燕麥奶底色 */
     .stApp {
-        background-color: #F6F1EB;
-        color: #38281F;
+        background-color: #F6F1EB !important;
+        color: #38281F !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
+    /* 頂部給予足夠安全間距，絕不再被切字 */
     .block-container {
-        max-width: 1000px;
-        padding-top: 1.5rem;
-        padding-bottom: 3.5rem;
+        max-width: 1020px;
+        padding-top: 3.5rem !important;
+        padding-bottom: 4rem !important;
     }
 
-    /* 頂部標題區 */
-    .title-area {
-        margin-bottom: 20px;
-    }
-    .main-title {
+    /* 頂部文字排版 */
+    .page-title {
         font-size: 2.2rem;
         font-weight: 800;
         color: #2D1E17;
         margin: 0;
-        letter-spacing: -0.5px;
+        line-height: 1.25;
     }
-    .sub-title {
+    .page-subtitle {
         color: #7D6B5D;
         font-size: 0.95rem;
-        margin-top: 6px;
+        margin-top: 4px;
+        margin-bottom: 20px;
     }
 
-    /* 🌟 四張超蝦趴專屬漸層卡片 */
+    /* 🌟 四張漸層卡片 */
     .card-base {
         border-radius: 18px;
-        padding: 20px 22px;
+        padding: 18px 20px;
         transition: all 0.25s ease;
         position: relative;
-        overflow: hidden;
         border: 1px solid rgba(255,255,255,0.7);
     }
     .card-base:hover {
@@ -81,7 +79,7 @@ st.markdown("""
     }
 
     .card-label {
-        font-size: 0.88rem;
+        font-size: 0.85rem;
         font-weight: 700;
         color: #634832;
         margin-bottom: 6px;
@@ -121,7 +119,7 @@ st.markdown("""
         font-size: 0.75rem;
     }
 
-    /* 🏷️ 分頁標籤美化 */
+    /* 🏷️ 分頁樣式 */
     .stTabs [data-baseweb="tab-list"] {
         background-color: #EAE1D7 !important;
         padding: 6px;
@@ -145,7 +143,7 @@ st.markdown("""
         display: none !important;
     }
 
-    /* 🪟 表單容器：完全融入燕麥色系，不再死白！ */
+    /* 🪟 奶泡米色表單 */
     [data-testid="stForm"] {
         background: #FAF6F0 !important;
         border: 1.5px solid #E5DBD1 !important;
@@ -154,36 +152,38 @@ st.markdown("""
         box-shadow: 0 8px 25px rgba(56, 40, 31, 0.04) !important;
     }
 
-    /* 🔘 單選豆款按鈕膠囊化 */
-    div[data-testid="stRadio"] > div {
-        gap: 10px;
-    }
-    div[data-testid="stRadio"] label {
-        background: #F0E8DF;
-        border: 1px solid #E0D3C4;
-        padding: 6px 14px;
-        border-radius: 10px;
-        transition: all 0.2s ease;
-    }
-    div[data-testid="stRadio"] label:hover {
-        background: #E8DCCF;
+    /* 移除 Radio 上方多餘的空框線 */
+    div[data-testid="stRadio"] > div:first-child {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
     }
 
-    /* ☕ 超有手感的深焙拿鐵漸層大按鈕 */
-    div.stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #6F432A 0%, #422517 100%) !important;
+    /* ☕ 強制覆蓋大按鈕：高質感深焙咖啡漸層（消除刺眼紅） */
+    button[kind="primary"], button[data-testid="baseButton-primary"] {
+        background: linear-gradient(135deg, #6F432A 0%, #3E2415 100%) !important;
         color: #FFF8F2 !important;
         border: none !important;
         border-radius: 12px !important;
         padding: 12px 24px !important;
         font-size: 1.05rem !important;
         font-weight: 700 !important;
-        box-shadow: 0 6px 16px rgba(66, 37, 23, 0.25) !important;
+        box-shadow: 0 6px 16px rgba(62, 36, 21, 0.28) !important;
         transition: all 0.2s ease !important;
     }
-    div.stButton > button[kind="primary"]:hover {
+    button[kind="primary"]:hover, button[data-testid="baseButton-primary"]:hover {
+        background: linear-gradient(135deg, #5C3620 0%, #2E180D 100%) !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 8px 22px rgba(66, 37, 23, 0.35) !important;
+        box-shadow: 0 8px 20px rgba(62, 36, 21, 0.4) !important;
+    }
+
+    /* 輕量重新整理小按鈕 */
+    button[kind="secondary"], button[data-testid="baseButton-secondary"] {
+        background: #FAF6F0 !important;
+        border: 1px solid #D5C8BB !important;
+        color: #5C4333 !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -210,16 +210,12 @@ def fetch_data():
 
 df = fetch_data()
 
-# 頁首標題區
-col_h1, col_h2 = st.columns([5, 1])
-with col_h1:
-    st.markdown("""
-    <div class="title-area">
-        <div class="main-title">☕ 辦公室咖啡續命站</div>
-        <div class="sub-title">喝咖啡是基本人權！掌握消耗節奏、精準推算斷糧日～</div>
-    </div>
-    """, unsafe_allow_html=True)
-with col_h2:
+# 頁首標題（獨立結構，確保不切頂）
+h_left, h_right = st.columns([5, 1])
+with h_left:
+    st.markdown('<div class="page-title">☕ 辦公室咖啡續命站</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">喝咖啡是基本人權！掌握消耗節奏、精準推算斷糧日～</div>', unsafe_allow_html=True)
+with h_right:
     if st.button("🔄 重新載入", use_container_width=True):
         st.rerun()
 
@@ -339,10 +335,10 @@ with tab1:
     with st.form("unpack_form", clear_on_submit=True):
         c1, c2 = st.columns(2)
         with c1:
-            bean_choice = st.radio("拆哪一款？", ["皇家義大利", "聖馬可綜合", "其他豆款"], horizontal=True)
+            bean_choice = st.radio("這次拆哪一款？", ["皇家義大利", "聖馬可綜合", "其他豆款"], horizontal=True)
             custom_bean = ""
             if bean_choice == "其他豆款":
-                custom_bean = st.text_input("輸入自訂豆款名稱")
+                custom_bean = st.text_input("輸入自訂豆款名稱", placeholder="輸入豆名")
         with c2:
             unpack_qty = st.number_input("開了幾包？", min_value=1, max_value=10, value=1, step=1)
             event_d = st.date_input("拆封日期", value=datetime.now().date())
@@ -372,10 +368,10 @@ with tab2:
     with st.form("restock_form", clear_on_submit=True):
         r1, r2 = st.columns(2)
         with r1:
-            r_bean_choice = st.radio("送來哪一款？", ["皇家義大利", "聖馬可綜合", "其他豆款"], horizontal=True)
+            r_bean_choice = st.radio("這次送來哪一款？", ["皇家義大利", "聖馬可綜合", "其他豆款"], horizontal=True)
             r_custom = ""
             if r_bean_choice == "其他豆款":
-                r_custom = st.text_input("輸入自訂到貨豆款")
+                r_custom = st.text_input("輸入自訂到貨豆款", placeholder="輸入豆名")
         with r2:
             r_qty = st.number_input("來了幾包？", min_value=1, value=2, step=1)
             r_date = st.date_input("到貨日期", value=datetime.now().date())
