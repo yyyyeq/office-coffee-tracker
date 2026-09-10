@@ -12,16 +12,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 🎨 平面設計大師專屬 CSS：特調燕麥奶與濃縮咖啡色盤
+# 🎨 絲滑流暢特調色盤：消滅死白與生硬跳色
 st.markdown("""
 <style>
-    /* 全站背景：溫潤燕麥奶色 */
+    /* 全站溫潤燕麥奶底色 */
     .stApp {
         background-color: #FAF6F0;
         color: #3C2A21;
     }
     
-    /* 隱藏預設頂部多餘邊距 */
     .block-container {
         padding-top: 2rem;
         padding-bottom: 3rem;
@@ -35,18 +34,12 @@ st.markdown("""
         color: #FDFBF7;
         margin-bottom: 25px;
         box-shadow: 0 10px 25px rgba(45, 30, 23, 0.15);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
     }
     .header-title {
         font-size: 2rem;
         font-weight: 800;
-        letter-spacing: -0.5px;
         margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 12px;
+        letter-spacing: -0.5px;
     }
     .header-desc {
         color: #D7C4B7;
@@ -55,7 +48,7 @@ st.markdown("""
         margin-bottom: 0;
     }
     
-    /* 4 張質感漸層卡片通用基礎 */
+    /* 四張質感指標卡片 */
     .card-base {
         border-radius: 18px;
         padding: 20px 22px;
@@ -69,7 +62,6 @@ st.markdown("""
         box-shadow: 0 12px 24px rgba(74, 52, 40, 0.12);
     }
     
-    /* 各卡片專屬個性漸層色 */
     .card-stock {
         background: linear-gradient(135deg, #FFFDF8 0%, #F5EBE1 100%);
         border-left: 6px solid #C87D55;
@@ -95,9 +87,6 @@ st.markdown("""
         font-size: 0.88rem;
         font-weight: 700;
         color: #634832;
-        display: flex;
-        align-items: center;
-        gap: 6px;
         margin-bottom: 8px;
     }
     .card-num {
@@ -118,7 +107,6 @@ st.markdown("""
         font-weight: 500;
     }
     
-    /* 膠囊標籤 */
     .pill-green {
         background: #E8F5E9;
         color: #2E7D32;
@@ -136,16 +124,58 @@ st.markdown("""
         font-size: 0.75rem;
     }
 
-    /* 表單容器升級成奶油白厚實卡片 */
-    [data-testid="stForm"] {
-        background: #FFFFFF !important;
-        border: 1.5px solid #EFE6DC !important;
-        border-radius: 20px !important;
-        padding: 24px 28px !important;
-        box-shadow: 0 8px 20px rgba(74, 52, 40, 0.04) !important;
+    /* 解決死白切換：分頁條改為暖調深淺融合 */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #EAE1D7 !important;
+        padding: 6px;
+        border-radius: 16px;
+        border: 1px solid #DDCFC2;
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 12px;
+        padding: 9px 20px;
+        font-weight: 700;
+        color: #6C5547 !important;
+        background-color: transparent !important;
+        border: none !important;
+        transition: all 0.25s ease-in-out !important;
+    }
+    /* 選中分頁時：厚奶泡米白，帶柔和陰影 */
+    .stTabs [aria-selected="true"] {
+        background-color: #FAF6F0 !important;
+        color: #3C2A21 !important;
+        box-shadow: 0 4px 12px rgba(60, 42, 33, 0.08) !important;
+    }
+    .stTabs [data-baseweb="tab-highlight"] {
+        display: none !important;
     }
 
-    /* 按鈕大師級美化：咖啡漸層大按鈕 */
+    /* 表單容器外觀：溫暖厚奶泡白，銜接自然 */
+    [data-testid="stForm"] {
+        background: #FAF6F0 !important;
+        border: 1.5px solid #E5D9CC !important;
+        border-radius: 20px !important;
+        padding: 24px 28px !important;
+        box-shadow: 0 8px 24px rgba(74, 52, 40, 0.04) !important;
+    }
+
+    /* 單選項目（豆款按鈕）：膠囊卡片化微調 */
+    div[data-testid="stRadio"] > div {
+        gap: 12px;
+    }
+    div[data-testid="stRadio"] label {
+        background: #F2EAE0;
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: 1px solid #E0D3C4;
+        transition: all 0.2s ease;
+    }
+    div[data-testid="stRadio"] label:hover {
+        background: #E8DCCF;
+    }
+
+    /* 主要按鈕：深焙拿鐵漸層 */
     div.stButton > button[kind="primary"] {
         background: linear-gradient(135deg, #7A4930 0%, #4A2818 100%) !important;
         color: #FFF6EE !important;
@@ -155,31 +185,11 @@ st.markdown("""
         font-weight: 700 !important;
         border-radius: 14px !important;
         box-shadow: 0 6px 15px rgba(74, 40, 24, 0.25) !important;
-        transition: all 0.2s ease !important;
+        transition: all 0.25s ease !important;
     }
     div.stButton > button[kind="primary"]:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 8px 20px rgba(74, 40, 24, 0.35) !important;
-    }
-    
-    /* 分頁標籤美化 */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background-color: #EFE8DF;
-        padding: 6px;
-        border-radius: 14px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        border-radius: 10px;
-        padding: 8px 18px;
-        font-weight: 700;
-        color: #5C483D;
-        border: none !important;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #FFFFFF !important;
-        color: #2D1E17 !important;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.08) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -206,13 +216,11 @@ def fetch_data():
 
 df = fetch_data()
 
-# 🎨 頂部質感深焙 Header
+# 頂部質感 Header
 st.markdown("""
 <div class="header-box">
-    <div>
-        <div class="header-title">☕ 辦公室咖啡續命站</div>
-        <div class="header-desc">喝咖啡是基本人權！掌握消耗節奏、精準推算斷糧日，缺豆前準時補貨～</div>
-    </div>
+    <div class="header-title">☕ 辦公室咖啡續命站</div>
+    <div class="header-desc">喝咖啡是基本人權！掌握消耗節奏、精準推算斷糧日，缺豆前準時補貨～</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -259,7 +267,7 @@ elif len(unpack_df) >= 1:
     today = datetime.now().date()
     current_opened_days = (today - unpack_df["event_date"].iloc[-1]).days
 
-# 4. 設計大師特製：四色漸層立體儀表卡
+# 4. 四張專屬漸層卡片
 c1, c2, c3, c4 = st.columns(4)
 
 with c1:
@@ -325,13 +333,13 @@ with c4:
 
 st.write("")
 
-# 俏皮警報
+# 預警小提醒
 if current_stock == 0:
     st.error("😱 **重大斷糧警報**：櫃子裡已經完全**沒有庫存**了！這包喝完就真的沒了，快去叫貨！")
 elif current_stock <= 2:
     st.warning(f"⚠️ **咖啡告急**：只剩最後 {current_stock} 包存貨！建議現在就可以準備下單囉～")
 
-# 5. 操作分頁（燕麥奶風格介面）
+# 5. 操作分頁
 tab1, tab2, tab3 = st.tabs(["☕ 我拆了新豆子！", "📦 咖啡豆到貨了！", "📊 飲用紀錄與趨勢"])
 
 with tab1:
@@ -416,7 +424,6 @@ with tab3:
     if len(unpack_df) >= 2:
         daily_unpacks = unpack_df.groupby(["event_date", "bean_name"]).size().reset_index(name="拆封包數")
         
-        # 暖木質調配色圖表
         fig = px.bar(
             daily_unpacks, 
             x="event_date", 
