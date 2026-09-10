@@ -173,10 +173,10 @@ st.write("")
 if current_stock == 0:
     st.error("😱 **重大警報**：櫃子裡已經**沒有半包存貨**了！這包喝完就真的沒了，快去叫貨！")
 elif current_stock == 1:
-    st.warning("⚠️ **咖啡告急**：只剩最後 1 包存貨！建議總務大大現在就可以準備下單囉～")
+    st.warning("⚠️ **咖啡告急**：只剩最後 1 包存貨！建議現在就可以準備下單囉～")
 
 # 5. 操作分頁
-tab1, tab2, tab3 = st.tabs(["☕ 我拆了一包新豆子！", "📦 咖啡豆到貨了！", "📊 飲用紀錄與排行榜"])
+tab1, tab2, tab3 = st.tabs(["☕ 我拆了一包新豆子！", "📦 咖啡豆到貨了！", "📊 飲用紀錄與趨勢"])
 
 with tab1:
     st.markdown("#### 拆了一包新的？隨手幫大家記一下～")
@@ -212,26 +212,28 @@ with tab2:
     with st.form("restock_form", clear_on_submit=True):
         r1, r2 = st.columns(2)
         with r1:
-            r_bean = st.text_input("這次買了什麼豆款？", placeholder="例如：湛盧 經典綜合豆 4 包裝")
-            r_qty = st.number_input("這次來了幾包？", min_value=1, value=2, step=1)
+            r_bean = st.text_input("這次買了什麼豆款？", placeholder="例如：湛盧 經典綜合豆、好市多星巴克")
         with r2:
-            r_who = st.text_input("誰採購/簽收的？", placeholder="例如：總務組、Alvin")
-            r_date = st.date_input("到貨日期", value=datetime.now().date())
+            r_qty = st.number_input("這次來了幾包？", min_value=1, value=2, step=1)
             
-        r_memo = st.text_input("備註一下價錢或哪裡買的？（選填）", placeholder="例如：momo特價 4 包 1200、好市多購入")
+        r3, r4 = st.columns(2)
+        with r3:
+            r_date = st.date_input("到貨日期", value=datetime.now().date())
+        with r4:
+            r_memo = st.text_input("備註說明（選填）", placeholder="例如：特價購入、單價 450 元")
         
         btn_stock = st.form_submit_button("📦 把豆子放進櫃子（入庫）", use_container_width=True)
         if btn_stock:
-            if not r_bean or not r_who:
-                st.error("記得寫一下是什麼豆子跟誰買的喔！方便對帳～")
+            if not r_bean:
+                st.error("請填寫一下到貨的豆子品名喔！")
             else:
                 records = [{
                     "event_type": "RESTOCK",
                     "bean_name": r_bean,
                     "weight_g": 454,
-                    "operator": r_who,
+                    "operator": "公司採購",  # 免填，系統自動帶入
                     "event_date": str(r_date),
-                    "note": f"{r_memo} (第 {i+1} 包)" if r_qty > 1 else r_memo
+                    "note": f"{r_memo} (第 {i+1} 包)" if r_qty > 1 and r_memo else (f"批次入庫第 {i+1} 包" if r_qty > 1 else r_memo)
                 } for i in range(r_qty)]
                 supabase.table("coffee_records").insert(records).execute()
                 st.toast(f"📦 庫存已增加 {r_qty} 包！辦公室又有精神啦～")
@@ -275,11 +277,11 @@ with tab3:
             "event_date": "日期",
             "bean_name": "咖啡豆名",
             "weight_g": "克數",
-            "operator": "誰記的",
+            "operator": "經手/開豆人",
             "note": "備註/評語"
         })
         st.dataframe(
-            display_df[["編號", "日期", "動作", "咖啡豆名", "克數", "誰記的", "備註/評語"]],
+            display_df[["編號", "日期", "動作", "咖啡豆名", "克數", "經手/開豆人", "備註/評語"]],
             use_container_width=True,
             hide_index=True
         )
